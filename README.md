@@ -1,4 +1,4 @@
-Cresco-Agent-Dummy-Plugin
+Cresco-Agent-MD5-Plugin
 =========================
 
 ### Status
