@@ -6,6 +6,9 @@ import java.io.FileInputStream;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.jar.Attributes;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
@@ -36,11 +39,13 @@ public class PluginEngine {
 	public static long incomingCount = 0;
 	public static long outgoingCount = 0;
 	
-	public static Thread LogConsumerThread;
+	public static ExecutorService consumerExecutor;
+	//public static Thread LogConsumerThread;
 	public static boolean LogConsumerActive = false;
 	public static boolean LogConsumerEnabled = false;
 	
-	private static Thread ProducerThread;
+	public static ExecutorService producerExecutor;
+	//private static Thread ProducerThread;
 	public static boolean ProducerActive = false;
 	public static boolean ProducerEnabled = false;
 	
@@ -78,6 +83,67 @@ public class PluginEngine {
 		isActive = false;
 		wd.timer.cancel(); //prevent rediscovery
 		wp.timer.cancel(); //prevent rediscovery
+		
+		//ProducerActive = false;
+		//LogConsumerActive = false;
+		PluginEngine.ProducerEnabled = false;
+		PluginEngine.LogConsumerEnabled = false;
+		//ProducerThread.interrupt();
+		//LogConsumerThread.interrupt();
+		
+		try {
+			if(producerExecutor != null)
+			{
+				producerExecutor.shutdown();
+				System.out.println("-----------------------");
+		        producerExecutor.awaitTermination(2, TimeUnit.SECONDS);
+			}
+			if(consumerExecutor != null)
+			{
+				consumerExecutor.shutdown();
+				System.out.println("-----------------------");
+				consumerExecutor.awaitTermination(2, TimeUnit.SECONDS);
+				// wait until all tasks are finished
+			}
+			
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.out.println("Plugin Shutdown : Agent=" + agent + "pluginname=" + plugin + " could not terminate " + e.toString());	
+		}
+        System.out.println("All tasks are finished!");
+
+		/*
+			while(PluginEngine.ProducerActive)
+			{
+				System.out.println("Plugin Shutdown : Agent=" + agent + "pluginname=" + plugin + " waiting on producer thread to exit.");
+				try 
+				{
+					Thread.sleep(1000);
+				
+				}
+				catch (InterruptedException e) 
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		
+			while(PluginEngine.LogConsumerActive)
+			{
+				System.out.println("Plugin Shutdown : Agent=" + agent + "pluginname=" + plugin + " waiting on consumer thread to exit.");
+				try 
+				{
+					Thread.sleep(1000);
+				} 
+				catch (InterruptedException e) 
+				{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				}
+			}
+		*/
+		
 		
 		try
 		{
@@ -174,7 +240,40 @@ public class PluginEngine {
 	    		return false;
 	    	}
 			
-			MD5Producer v = new MD5Producer();
+			if(config.getLogProducerEnabled())
+	    	{
+				producerExecutor = Executors.newFixedThreadPool(1);
+				//MD5Producer v = new MD5Producer();
+		    	Runnable v = new MD5Producer();;
+		    	producerExecutor.execute(v);
+		    	
+		    	while(!ProducerEnabled)
+	    		{
+	    			Thread.sleep(1000);
+	    			String msg = "Waiting for MD5Producer Initialization : Region=" + region + " Agent=" + agent + " plugin=" + plugin;
+	    			clog.log(msg);	
+	    		}
+		    	PluginEngine.ProducerActive = true;
+		    	
+	    	}
+			if(config.getLogConsumerEnabled())
+	    	{
+				consumerExecutor = Executors.newFixedThreadPool(1);
+				Runnable lc = new MD5Consumer(); 
+				consumerExecutor.execute(lc);
+				while(!LogConsumerEnabled)
+		    	{
+		    		Thread.sleep(1000);
+		    		String msg = "Waiting for MD5Consumer Initialization : Region=" + region + " Agent=" + agent + " plugin=" + plugin;
+		    		clog.log(msg);
+		    		
+		    	}
+				PluginEngine.LogConsumerActive = true;			
+	    	}
+/*			
+			int timeout = 20;
+			PluginEngine.ProducerActive = true;
+	    	MD5Producer v = new MD5Producer();
 	    	ProducerThread = new Thread(v);
 	    	if(config.getLogProducerEnabled())
 	    	{
@@ -184,11 +283,18 @@ public class PluginEngine {
 	    			Thread.sleep(1000);
 	    			String msg = "Waiting for MD5Producer Initialization : Region=" + region + " Agent=" + agent + " plugin=" + plugin;
 	    			clog.log(msg);
+	    			if(!ProducerThread.isAlive())
+	    			{
+	    				System.out.println("Starting New Producer Thread");
+	    				ProducerThread.start();
+	    				
+	    			}
 	    		}
 	    	}
-	    	PluginEngine.ProducerActive = true;
-	    	
-	    	MD5Consumer lc = new MD5Consumer();
+*/	    	
+			/*
+	    	PluginEngine.LogConsumerActive = true;
+		    MD5Consumer lc = new MD5Consumer();
     		LogConsumerThread = new Thread(lc);
 	    	if(config.getLogConsumerEnabled())
 	    	{
@@ -198,11 +304,17 @@ public class PluginEngine {
 		    		Thread.sleep(1000);
 		    		String msg = "Waiting for MD5Consumer Initialization : Region=" + region + " Agent=" + agent + " plugin=" + plugin;
 		    		clog.log(msg);
+		    		
+		    		if(!LogConsumerThread.isAlive())
+		    		{
+		    			System.out.println("Starting New Consumer Thread");
+		    			LogConsumerThread.start();
+		    		}
+		    		
 		    	}
-	    		PluginEngine.LogConsumerActive = true;
-		    	
-		    	
 	    	}
+	    	*/
+	    	
 			/*
 	    	try
 	    	{

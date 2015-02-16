@@ -43,16 +43,13 @@ public class MD5Consumer implements Runnable {
     		//channel.exchangeDeclare(PluginEngine.LOG_CHANNEL_NAME, "fanout");
     		//String queueName = channel.queueDeclare().getQueue();
     		//channel.queueBind(queueName, PluginEngine.LOG_CHANNEL_NAME, "");
-    		
     		Connection connection = PluginEngine.factory.newConnection();
     		LOG_CHANNEL_NAME = PluginEngine.config.getDataQueueName();
     		channel = connection.createChannel();
     		channel.exchangeDeclare(LOG_CHANNEL_NAME, "fanout");
     		String queueName = channel.queueDeclare().getQueue();
     		channel.queueBind(queueName, LOG_CHANNEL_NAME, "");
-    		
-
-    		consumer = new QueueingConsumer(channel);
+       		consumer = new QueueingConsumer(channel);
     		channel.basicConsume(queueName, true, consumer); 
     		
     		PluginEngine.LogConsumerEnabled = true;
@@ -64,20 +61,22 @@ public class MD5Consumer implements Runnable {
     		return;
     	}
     	
-    	while (true) 
-    	{
-    		try 
+    	//while (PluginEngine.LogConsumerEnabled)
+    	try {
+    		while (PluginEngine.LogConsumerEnabled)
+    		{  
+    	    try 
         	{
         		if(PluginEngine.LogConsumerActive)
         		{
-        			
+        			//consumer.getChannel().close();
         			QueueingConsumer.Delivery delivery = consumer.nextDelivery();
         			String message = new String(delivery.getBody());
         			ArrayList<String> uuidList = new ArrayList<String>();
-        			
-        			if(message.contains(","))
+        			System.out.println("*OUT" + message + "*OUT");
+        			if(message.contains("\n"))
         			{
-        				String[] sstr = message.split(",");
+        				String[] sstr = message.split("\n");
         				for(String str : sstr)
         				{
         					uuidList.add(str);
@@ -105,10 +104,16 @@ public class MD5Consumer implements Runnable {
         	{
         		System.out.println("ERROR : Log Consumer : " + ex.toString());
         	}
-        		    	
-			
-        }
+    	      }
+    	   } 
+    	catch (Exception ex)
+    	{
+    		System.out.println("ERROR : Log Consumer : " + ex.toString());
+    		PluginEngine.LogConsumerActive = false;
+    	}
     	
+    	PluginEngine.LogConsumerActive = false;
+    return;	
     }
 	
 }

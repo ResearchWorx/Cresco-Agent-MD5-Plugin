@@ -1,8 +1,10 @@
 package channels;
 import java.io.IOException;
 import java.util.UUID;
+
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
+
 import plugincore.PluginEngine;
 
 
@@ -39,8 +41,8 @@ public class MD5Producer implements Runnable {
     	String msg = "MD5Producer Started";
     	PluginEngine.clog.log(msg);
     	
-    	
-    	
+    	try{
+    	 //while(!Thread.currentThread().isInterrupted()) 
     	while (PluginEngine.ProducerEnabled) 
     	{
     		try 
@@ -49,47 +51,65 @@ public class MD5Producer implements Runnable {
         		if(PluginEngine.ProducerActive)
         		{
         			log();
+        			System.out.println("Log: ProducerEnabled: " + PluginEngine.ProducerEnabled + " ProducerActive:" + PluginEngine.ProducerActive);
         		}
         		
-				Thread.sleep(100);
+				//Thread.sleep(100);
+				Thread.sleep(PluginEngine.config.getDataQueueDelay());
+				
 	        } 
-        	catch (IOException e1) 
+        	catch (Exception ex) 
         	{
-				e1.printStackTrace();
-				System.out.println(e1);
-			} 
-        	catch (InterruptedException e) 
-        	{
-        		String msgStop = "MD5Producer Stopped";
+        		String msgStop = "MD5Producer Error: " + ex.toString();
             	PluginEngine.clog.log(msgStop);
             	
-				try
-		    	{
-		    		if(log_channel.isOpen())
-		    		{
-		    			log_channel.close();
-		    		}
-		    	}
-		    	catch(Exception ex)
-		    	{
-		    		String msgError = "AMPQChannel LogProducer Stopped";
-		    		PluginEngine.clog.error(msgError);
-		    	}		    	
-			}
+			} 
         	
         }
+    	}
+    	catch (Exception ex) 
+    	{
+    		PluginEngine.ProducerActive = false;
+    		String msgStop = "MD5Producer Interupt Error: " + ex.toString();
+        	PluginEngine.clog.log(msgStop);
+        	
+		} 
+    	
+    	System.out.println("Plugin Shutdown : Agent=" + PluginEngine.agent + "pluginname=" + PluginEngine.plugin + " closing producer log");
+		
+    	try
+    	{
+    		if(log_channel.isOpen())
+    		{
+    			log_channel.close();
+    		}
+    		
+    	}
+    	catch(Exception ex)
+    	{
+    		String msgError = "MS5Producer Error close log_channel: " + ex.toString();
+    		PluginEngine.clog.error(msgError);
+    	}
+    	
+    	try
+    	{
+    		if(connection.isOpen())
+    		{
+    			connection.close();
+    		}
+    	}
+    	catch(Exception ex)
+    	{
+    		String msgError = "MS5Producer Error close connection: " + ex.toString();
+    		PluginEngine.clog.error(msgError);
+    	}
+    	
+    	PluginEngine.ProducerActive = false;
+    	
     	String msgStop = "MD5Producer Disabled";
     	PluginEngine.clog.log(msgStop);
+    	//System.out.println(msgStop)
     	
-    	try 
-    	{
-			log(); //one last call
-			
-		} 
-    	catch (IOException e) 
-    	{
-			e.printStackTrace();
-		}
     	return;
     }
 
@@ -111,23 +131,20 @@ public class MD5Producer implements Runnable {
     	}
     	try
     	{
-    			while (true) 
-				{
-    				
     				StringBuilder sb = new StringBuilder();
     				for(int i =0 ; i<PluginEngine.config.getProducerRate(); i++)
     				{
     					UUID uuid = UUID.randomUUID();
-    					sb.append(uuid.toString() + ",");
+    					sb.append(uuid.toString() + "\n");
     					PluginEngine.incomingCount++;
     				}
-    				
+    				System.out.println("*IN" + sb.substring(0, sb.length() -1).toString() + "*IN");
+        			
     				log_channel.basicPublish(LOG_CHANNEL_NAME, "", null, sb.substring(0, sb.length() -1).toString().getBytes());
     				
     				//Thread.sleep(1000);
-    				Thread.sleep(PluginEngine.config.getDataQueueDelay());
-    			}
-    		
+    				//Thread.sleep(PluginEngine.config.getDataQueueDelay());
+    			
     	}
     	catch(Exception ex)
     	{

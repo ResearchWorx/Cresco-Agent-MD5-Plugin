@@ -57,7 +57,7 @@ public class WatchPerf {
 			 le.setParam("isGlobal", "true");
 			 le.setParam("application", PluginEngine.config.getPerfAppName());
 			 
-			 
+			 le.setParam("incomingCount", String.valueOf(PluginEngine.incomingCount));
 			if((PluginEngine.incomingCount == 0))
 			 {
 				 le.setParam("perfin","0.0");
@@ -72,7 +72,8 @@ public class WatchPerf {
 				 le.setParam("perfin",String.valueOf(perfin));
 				 
 			 }
-			
+			 le.setParam("outgoingCount", String.valueOf(PluginEngine.outgoingCount));
+				
 			if((PluginEngine.outgoingCount == 0))
 			 {
 				 le.setParam("perfout","0.0");
