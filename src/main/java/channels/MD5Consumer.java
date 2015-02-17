@@ -73,7 +73,7 @@ public class MD5Consumer implements Runnable {
         			QueueingConsumer.Delivery delivery = consumer.nextDelivery();
         			String message = new String(delivery.getBody());
         			ArrayList<String> uuidList = new ArrayList<String>();
-        			System.out.println("*OUT" + message + "*OUT");
+        			//System.out.println("*OUT" + message + "*OUT");
         			if(message.contains("\n"))
         			{
         				String[] sstr = message.split("\n");

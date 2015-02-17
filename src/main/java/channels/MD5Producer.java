@@ -51,7 +51,7 @@ public class MD5Producer implements Runnable {
         		if(PluginEngine.ProducerActive)
         		{
         			log();
-        			System.out.println("Log: ProducerEnabled: " + PluginEngine.ProducerEnabled + " ProducerActive:" + PluginEngine.ProducerActive);
+        			//System.out.println("Log: ProducerEnabled: " + PluginEngine.ProducerEnabled + " ProducerActive:" + PluginEngine.ProducerActive);
         		}
         		
 				//Thread.sleep(100);
@@ -138,7 +138,7 @@ public class MD5Producer implements Runnable {
     					sb.append(uuid.toString() + "\n");
     					PluginEngine.incomingCount++;
     				}
-    				System.out.println("*IN" + sb.substring(0, sb.length() -1).toString() + "*IN");
+    				//System.out.println("*IN" + sb.substring(0, sb.length() -1).toString() + "*IN");
         			
     				log_channel.basicPublish(LOG_CHANNEL_NAME, "", null, sb.substring(0, sb.length() -1).toString().getBytes());
     				
