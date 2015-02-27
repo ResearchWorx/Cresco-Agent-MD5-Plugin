@@ -70,7 +70,12 @@ public class MD5Consumer implements Runnable {
         		if(PluginEngine.LogConsumerActive)
         		{
         			//consumer.getChannel().close();
+        			//long begin = System.currentTimeMillis();
+        			long begin = System.nanoTime();
+        			
+            		
         			QueueingConsumer.Delivery delivery = consumer.nextDelivery();
+        			
         			String message = new String(delivery.getBody());
         			ArrayList<String> uuidList = new ArrayList<String>();
         			//System.out.println("*OUT" + message + "*OUT");
@@ -86,19 +91,25 @@ public class MD5Consumer implements Runnable {
         			{
         				uuidList.add(message);
         			}
-
+        			/*
         			for(String uuid : uuidList)
         			{
-        				PluginEngine.outgoingCount++;
+        				//PluginEngine.outgoingCount++;
         				MessageDigest m = MessageDigest.getInstance("MD5");
             	        m.update(uuid.getBytes(),0,uuid.length());
-            	        //System.out.println("MD5: "+new BigInteger(1,m.digest()).toString(16));			
+            	        //System.out.println("MD5: "+new BigInteger(1,m.digest()).toString(16));
+            	        m = null;
         			}
-        			
+        			*/
+        			long end = System.nanoTime();
+          	  		long dt = end - begin;
+          	  		PluginEngine.etOut = dt;
+            		
         		}
         		
 				//Thread.sleep(100);
 				Thread.sleep(PluginEngine.config.getDataQueueDelay());
+				
         	}
         	catch (Exception ex)
         	{

@@ -56,39 +56,8 @@ public class WatchPerf {
 			 le.setParam("dst_region", PluginEngine.region);
 			 le.setParam("isGlobal", "true");
 			 le.setParam("application", PluginEngine.config.getPerfAppName());
-			 
-			 le.setParam("incomingCount", String.valueOf(PluginEngine.incomingCount));
-			if((PluginEngine.incomingCount == 0))
-			 {
-				 le.setParam("perfin","0.0");
-			 }
-			 else
-			 {
-				 double num = PluginEngine.incomingCount - lastIncoming;
-				 double denom = (runTime - lastRunTime)/1000;
-				 double perfin = num/denom;
-				 lastIncoming = PluginEngine.incomingCount;
-				 lastRunTime = runTime;
-				 le.setParam("perfin",String.valueOf(perfin));
-				 
-			 }
-			 le.setParam("outgoingCount", String.valueOf(PluginEngine.outgoingCount));
-				
-			if((PluginEngine.outgoingCount == 0))
-			 {
-				 le.setParam("perfout","0.0");
-			 }
-			 else
-			 {
-				 double num = PluginEngine.outgoingCount - lastOutgoing;
-				 double denom = (runTime - lastRunTime)/1000;
-				 double perfout = num/denom;
-				 lastIncoming = PluginEngine.outgoingCount;
-				 lastRunTime = runTime;
-				 le.setParam("perfout",String.valueOf(perfout));
-			 } 
-			 
-			 //le.setParam("perfmetric",String.valueOf(rand.nextInt(100 - 0 + 1) + 0));
+			 le.setParam("etIn", String.valueOf(PluginEngine.etIn));
+			 le.setParam("etOut", String.valueOf(PluginEngine.etOut));
 			 le.setParam("runtime", String.valueOf(runTime));
 			 le.setParam("timestamp", String.valueOf(System.currentTimeMillis()));
 			 //System.out.println(le.getParamsString());

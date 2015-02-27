@@ -13,6 +13,7 @@ public class MD5Producer implements Runnable {
 	private Connection connection;
     private Channel log_channel;
     private String LOG_CHANNEL_NAME;
+    private String payload;
     
     public MD5Producer() 
     {
@@ -27,6 +28,15 @@ public class MD5Producer implements Runnable {
     		LOG_CHANNEL_NAME = PluginEngine.config.getDataQueueName();
     		log_channel = connection.createChannel();
     		log_channel.exchangeDeclare(LOG_CHANNEL_NAME, "fanout");
+    		
+    		StringBuilder sb = new StringBuilder();
+			for(int i =0 ; i<PluginEngine.config.getProducerRate(); i++)
+			{
+				UUID uuid = UUID.randomUUID();
+				sb.append(uuid.toString() + "\n");
+				//PluginEngine.incomingCount++;
+			}
+    		payload = sb.substring(0, sb.length() -1).toString();
     		
     	}
     	catch(Exception ex)
@@ -131,20 +141,43 @@ public class MD5Producer implements Runnable {
     	}
     	try
     	{
+    		long begin = System.nanoTime();
+    		StringBuilder sb = new StringBuilder();
+			for(int i =0 ; i<PluginEngine.config.getProducerRate(); i++)
+			{
+				UUID uuid = UUID.randomUUID();
+				sb.append(uuid.toString() + "\n");
+				//PluginEngine.incomingCount++;
+			}
+	
+    		//log_channel.basicPublish(LOG_CHANNEL_NAME, "", null, payload.getBytes());
+			log_channel.basicPublish(LOG_CHANNEL_NAME, "", null, sb.substring(0, sb.length() -1).toString().getBytes());
+  			
+			long end = System.nanoTime();
+  	  		long dt = end - begin;
+  	  	    PluginEngine.etIn = dt;
+	  		
+    		/*
+    		long begin = System.currentTimeMillis();
+    		
     				StringBuilder sb = new StringBuilder();
     				for(int i =0 ; i<PluginEngine.config.getProducerRate(); i++)
     				{
     					UUID uuid = UUID.randomUUID();
     					sb.append(uuid.toString() + "\n");
-    					PluginEngine.incomingCount++;
+    					//PluginEngine.incomingCount++;
     				}
     				//System.out.println("*IN" + sb.substring(0, sb.length() -1).toString() + "*IN");
         			
     				log_channel.basicPublish(LOG_CHANNEL_NAME, "", null, sb.substring(0, sb.length() -1).toString().getBytes());
-    				
+  			long end = System.currentTimeMillis();
+  	  		long dt = end - begin;
+  	  		PluginEngine.etIn = dt;
+  	  		sb.setLength(0);
+  	  		
     				//Thread.sleep(1000);
     				//Thread.sleep(PluginEngine.config.getDataQueueDelay());
-    			
+    		 */
     	}
     	catch(Exception ex)
     	{

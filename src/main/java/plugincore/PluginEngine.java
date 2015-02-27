@@ -36,8 +36,10 @@ public class PluginEngine {
     //public static Connection connection;
     //public static String LOG_CHANNEL_NAME;
     //public static Channel log_channel;
-	public static long incomingCount = 0;
-	public static long outgoingCount = 0;
+	//public static long incomingCount = 0;
+	//public static long outgoingCount = 0;
+	public static long etIn = 0;
+	public static long etOut = 0;
 	
 	public static ExecutorService consumerExecutor;
 	//public static Thread LogConsumerThread;
